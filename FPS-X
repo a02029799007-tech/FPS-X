@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FPS-Booster">
+    <title>FPS ULTRA BOOSTER PANEL V.3</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@400;700&display=swap');
+
+        :root {
+            --primary-cyan: #00f2fe;
+            --primary-purple: #7f00ff;
+            --primary-green: #34c759;
+            --neon-glow: 0 0 15px rgba(0, 242, 254, 0.7);
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background: linear-gradient(-45deg, #020b14, #0a021a, #02141a, #000000);
+            background-size: 400% 400%;
+            animation: gradientMove 12s ease infinite;
+            font-family: 'Montserrat', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; color: #fff; overflow: hidden;
+            -webkit-user-select: none;
+        }
+
+        #particles-js { position: absolute; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+
+        /* Notification */
+        #toast {
+            position: absolute; top: 30px; right: 30px;
+            padding: 12px 25px; border-radius: 50px; font-size: 13px; font-weight: bold;
+            z-index: 1000; opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(-20px) scale(0.5); pointer-events: none;
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .toast-on { background: rgba(0, 242, 254, 0.3); color: #fff; opacity: 1 !important; transform: translateY(0) scale(1) !important; box-shadow: 0 0 20px rgba(0, 242, 254, 0.4); border: 1px solid var(--primary-cyan); }
+        .toast-off { background: rgba(255, 59, 48, 0.3); color: #fff; opacity: 1 !important; transform: translateY(0) scale(1) !important; box-shadow: 0 0 20px rgba(255, 59, 48, 0.4); }
+
+        .glass {
+            background: rgba(10, 15, 26, 0.85);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 242, 254, 0.15);
+            border-radius: 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            z-index: 10;
+        }
+
+        #login-screen { width: 340px; padding: 45px 30px; text-align: center; }
+        .login-box h2 { font-family: 'Orbitron'; letter-spacing: 3px; color: var(--primary-cyan); text-shadow: var(--neon-glow); margin-bottom: 30px; }
+        .login-box input { width: 85%; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 242, 254, 0.2); color: #fff; border-radius: 12px; text-align: center; margin-bottom: 20px; outline: none; font-family: 'Orbitron'; letter-spacing: 2px; }
+        .login-box input:focus { border-color: var(--primary-cyan); box-shadow: var(--neon-glow); }
+        .login-box button { width: 95%; padding: 15px; background: linear-gradient(90deg, var(--primary-purple), var(--primary-cyan)); color: #fff; font-weight: bold; border: none; border-radius: 12px; cursor: pointer; box-shadow: var(--neon-glow); font-family: 'Orbitron'; }
+
+        #loading-container { display: none; margin-top: 30px; }
+        .progress-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background: var(--primary-cyan); box-shadow: 0 0 15px var(--primary-cyan); }
+
+        #main-panel { display: none; width: 95vw; max-width: 650px; height: 600px; flex-direction: column; overflow: hidden; position: relative; }
+        .window-header { height: 50px; background: rgba(255,255,255,0.03); display: flex; align-items: center; padding: 0 20px; justify-content: space-between; border-bottom: 1px solid rgba(0, 242, 254, 0.1); }
+        .header-title { font-family: 'Orbitron'; color: var(--primary-cyan); font-size: 11px; letter-spacing: 1px; text-shadow: 0 0 5px rgba(0,242,254,0.3); }
+
+        .main-container { display: flex; flex: 1; overflow: hidden; position: relative; }
+        .sidebar { width: 150px; background: rgba(0,0,0,0.5); border-right: 1px solid rgba(0, 242, 254, 0.1); overflow-y: auto; }
+        .nav-item { padding: 22px 10px; text-align: center; font-size: 10px; color: #7f8c8d; cursor: pointer; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.01); letter-spacing: 1px; font-family: 'Orbitron'; }
+        .nav-item.active { color: #fff; background: rgba(0, 242, 254, 0.1); border-left: 4px solid var(--primary-cyan); text-shadow: 0 0 10px var(--primary-cyan); }
+
+        .content { flex: 1; padding: 25px; display: none; overflow-y: auto; animation: slideIn 0.4s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .content.active { display: block; }
+
+        .section-header { font-family: 'Orbitron'; font-size: 11px; color: var(--primary-cyan); margin: 15px 0; border-left: 4px solid var(--primary-cyan); padding-left: 10px; letter-spacing: 1px; }
+
+        .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .option-item { background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; gap: 10px; font-size: 10px; font-weight: bold; color: #d1d8e0; }
+        .option-item input[type="checkbox"] { accent-color: var(--primary-cyan); }
+
+        .slider-container { background: rgba(255,255,255,0.01); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 15px; }
+        .val-text { font-family: 'Orbitron'; color: var(--primary-cyan); font-weight: bold; }
+        input[type="range"] { width: 100%; -webkit-appearance: none; background: #222; height: 4px; border-radius: 10px; margin-top: 10px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: #fff; border-radius: 50%; border: 3px solid var(--primary-cyan); box-shadow: var(--neon-glow); }
+
+        select { width: 100%; padding: 12px; background: #070d14; color: #fff; border-radius: 10px; border: 1px solid rgba(0,242,254,0.2); font-family: 'Orbitron'; font-size: 10px; margin-bottom: 10px; outline: none; }
+
+        #console-logs {
+            position: absolute; bottom: 60px; right: 20px; width: 200px; height: 80px;
+            background: rgba(0,0,0,0.7); border: 1px solid rgba(0,242,254,0.2);
+            border-radius: 10px; padding: 8px; font-family: monospace; font-size: 8px;
+            color: var(--primary-cyan); overflow-y: auto; pointer-events: none;
+        }
+
+        .btn-game { width: 100%; padding: 18px; border-radius: 12px; border: 1px solid rgba(0,242,254,0.2); background: #0d1520; color: white; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-family: 'Orbitron'; transition: 0.2s; }
+        .btn-game:active { background: var(--primary-cyan); color: #000; transform: translateY(2px); box-shadow: var(--neon-glow); }
+
+        .footer-info { position: absolute; bottom: 10px; width: 100%; display: flex; justify-content: space-around; font-size: 8px; color: #555; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+<div id="particles-js"></div>
+<div id="toast"></div>
+
+<!-- หน้าต่างล็อกอิน (รหัสผ่านคือ boost) -->
+<div id="login-screen" class="glass">
+    <div class="login-box">
+        <h2>FPS BOOSTER V3</h2>
+        <input type="password" id="pass-input" placeholder="ENTER ACCESS CODE">
+        <button onclick="handleLogin()">INITIALIZE PANEL</button>
+        <div id="loading-container">
+            <div class="progress-bg"><div id="p-bar" class="progress-bar"></div></div>
+            <div id="p-text" style="color:var(--primary-cyan); font-size:10px; margin-top:10px; font-family:'Orbitron'">INJECTING ENGINE 0%</div>
+        </div>
+    </div>
+</div>
+
+<!-- แผงควบคุมหลัก -->
+<div id="main-panel" class="glass">
+    <div class="window-header">
+        <div style="display:flex; gap:8px;">
+            <div style="background:#ff5f56; width:10px; height:10px; border-radius:50%"></div>
+            <div style="background:#ffbd2e; width:10px; height:10px; border-radius:50%"></div>
+            <div style="background:#27c93f; width:10px; height:10px; border-radius:50%"></div>
+        </div>
+        <div class="header-title" id="top-fps">CORE TUNER V.3 | 00.0 FPS</div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="nav-item active" onclick="popClick(); openTab(event, 'gpu_tuner')">GPU TUNER</div>
+            <div class="nav-item" onclick="popClick(); openTab(event, 'ram_opt')">MEM OPT</div>
+            <div class="nav-item" onclick="popClick(); openTab(event, 'screen_sync')">DISPLAY</div>
+            <div class="nav-item" onclick="popClick(); openTab(event, 'ultra_boost')">POWER</div>
+            <div class="nav-item" style="color:var(--primary-cyan)" onclick="popClick(); openTab(event, 'launch_zone')">LAUNCH APP</div>
+        </div>
+
+        <!-- แท็บ 1: GPU Tuner -->
+        <div id="gpu_tuner" class="content active">
+            <div class="section-header">GRAPHICS ENGINE OVERCLOCK</div>
+            <div class="grid-options">
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Hardware Acceleration</div>
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Vulkan API Render</div>
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> 4x MSAA Optimizer</div>
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Shaders Cache Fix</div>
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Anisotropic Filtering</div>
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> GPU Thermal Unlock</div>
+            </div>
+            <div class="section-header">RENDERING SCALE</div>
+            <div class="slider-container">
+                <div style="display:flex; justify-content:space-between; font-size:10px;"><span>STABILITY FORCE</span><span class="val-text" id="suck-val">100%</span></div>
+                <input type="range" min="0" max="100" value="100" oninput="updateVal('suck-val', this.value + '%')">
+            </div>
+        </div>
+
+        <!-- แท็บ 2: MEM OPT -->
+        <div id="ram_opt" class="content">
+            <div class="section-header">MEMORY BUFFER TUNING</div>
+            <div class="slider-container">
+                <div style="display:flex; justify-content:space-between; font-size:10px;"><span>VIRTUAL RAM EXPANSION</span><span class="val-text" id="dpi-val">4096 MB</span></div>
+                <input type="range" min="1024" max="8192" step="512" value="4096" oninput="updateVal('dpi-val', this.value + ' MB')">
+            </div>
+            <div class="slider-container">
+                <div style="display:flex; justify-content:space-between; font-size:10px;"><span>REFRESH DELAY RATE</span><span class="val-text" id="ms-val">0.1ms</span></div>
+                <input type="range" min="0.1" max="5.0" step="0.1" value="0.1" oninput="updateVal('ms-val', this.value + 'ms')">
+            </div>
+            <div class="option-item" style="width:100%"><input type="checkbox" onchange="notify(this)"> Auto Ram Purge (Background Process)</div>
+        </div>
+
+        <!-- แท็บ 3: DISPLAY -->
+        <div id="screen_sync" class="content">
+            <div class="section-header">FRAME RATE CONFIGURATOR</div>
+            <div class="slider-container">
+                <div style="display:flex; justify-content:space-between; font-size:10px;"><span>FPS REFRESH TARGET</span><span class="val-text" id="fps-val">60 FPS</span></div>
+                <input type="range" min="30" max="240" step="30" value="60" oninput="updateVal('fps-val', this.value + ' FPS')">
+            </div>
+        </div>
+
+        <!-- แท็บ 4: LAUNCH ZONE (ตรงนี้เปลี่ยนเป็น YouTube กับ TikTok แล้วและเด้งแอปจริงได้) -->
+        <div id="launch_zone" class="content">
+            <div class="section-header">SELECT DEVICE PROFILES</div>
+            <select id="device" onchange="popClick(); addLog('Profile: ' + this.value)">
+                <option>High-End Gaming Device Profile</option>
+                <option>Battery Saver Profile (60 FPS)</option>
+                <option>Extreme Performance Profile (Overclock)</option>
+            </select>
+            <div class="section-header">BOOST & DEEP LAUNCH APP</div>
+            <button class="btn-game" onclick="launchApp('YouTube', 'youtube://')">OPTIMIZE & LAUNCH YOUTUBE 📺</button>
+            <button class="btn-game" onclick="launchApp('TikTok', 'snssdk1233://')">OPTIMIZE & LAUNCH TIKTOK 🎵</button>
+        </div>
+
+        <!-- แท็บ 5: POWER -->
+        <div id="ultra_boost" class="content">
+            <div class="section-header">CORE PERFORMANCE ENGINE</div>
+            <div class="option-item" style="width:100%; margin-bottom:10px;"><input type="checkbox" id="fps-ultra-check" onchange="toggleBoster(this)"> LUDICROUS ULTRA BOOST MODE</div>
+            <div class="grid-options">
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Thermal Control Bypass</div>
+                <div class="option-item"><input type="checkbox" onchange="notify(this)"> Clean System Log Cache</div>
+            </div>
+        </div>
+
+        <!-- ระบบกล่อง Log วิ่งหลอกตา -->
+        <div id="console-logs"><div id="log-text">System Core Engine Ready...</div></div>
+    </div>
+
+    <div class="footer-info">
+        <span>CORE_ID: <b id="hwid-val"></b></span>
+        <span>DELAY: <b id="ping-val">12ms</b></span>
+        <span>STATUS: <b style="color:var(--primary-cyan)">OPTIMIZED</b></span>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script>
+    let isBosterActive = false;
+    const popSound = new Audio("data:audio/wav;base64,UklGRj4AAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRIDAAAAZv9m/2b/Zv9m/2b/Zv8=");
+    popSound.volume = 0.3;
+
+    particlesJS('particles-js', {"particles":{"number":{"value":40},"color":{"value":"#00f2fe"},"opacity":{"value":0.15},"size":{"value":1},"move":{"enable":true,"speed":1,"direction":"top"}}});
+
+    function popClick() { popSound.currentTime = 0; popSound.play(); }
+
+    function addLog(msg) {
+        const log = document.getElementById('log-text');
+        log.innerHTML += `<br>> ${msg}`;
+        document.getElementById('console-logs').scrollTop = 1000;
+    }
+
+    function notify(checkbox) {
+        popClick();
+        const state = checkbox.checked ? "ACTIVATED" : "DEACTIVATED";
+        const label = checkbox.parentElement.innerText.trim();
+        addLog(label + " is " + state);
+        const t = document.getElementById('toast');
+        t.innerText = checkbox.checked ? "CORE OPTIMIZED" : "DISABLED";
+        t.className = checkbox.checked ? "toast-on" : "toast-off";
+        setTimeout(() => t.className = "", 1500);
+    }
+
+    // แก้ไขรหัสผ่านเข้าหน้าแรกเป็นคำว่า "boost"
+    function handleLogin() {
+        if(document.getElementById('pass-input').value === "boost") {
+            popClick();
+            document.getElementById('loading-container').style.display = 'block';
+            let p = 0;
+            const inv = setInterval(() => {
+                p += Math.floor(Math.random() * 15) + 3;
+                if(p >= 100) {
+                    p = 100; clearInterval(inv);
+                    setTimeout(() => {
+                        document.getElementById('login-screen').style.display = 'none';
+                        document.getElementById('main-panel').style.display = 'flex';
+                        addLog("FPS Booster Kernel Loaded successfully.");
+                    }, 500);
+                }
+                document.getElementById('p-bar').style.width = p + '%';
+                document.getElementById('p-text').innerText = "INJECTING ENGINE " + p + "%";
+            }, 70);
+        } else { alert("INVALID ACCESS CODE! (Hint: boost)"); }
+    }
+
+    function openTab(e, n) {
+        let c = document.getElementsByClassName("content");
+        for (let i = 0; i < c.length; i++) c[i].style.display = "none";
+        let ni = document.getElementsByClassName("nav-item");
+        for (let i = 0; i < ni.length; i++) ni[i].classList.remove("active");
+        document.getElementById(n).style.display = "block";
+        e.currentTarget.classList.add("active");
+        addLog("Modules Open: " + n.toUpperCase());
+    }
+
+    function updateVal(id, val) { popClick(); document.getElementById(id).innerText = val; }
+    function toggleBoster(cb) { isBosterActive = cb.checked; notify(cb); }
+
+    // ฟังก์ชันรันอนิเมชันหลอกและเด้งเข้าแอปจริง
+    function launchApp(appName, scheme) {
+        popClick(); 
+        addLog("Overclocking CPU Cores...");
+        addLog("Purging System Cache Memory...");
+        addLog("Launching " + appName + " with Ultra FPS...");
+        
+        setTimeout(() => { 
+            window.location.href = scheme; 
+        }, 1500);
+    }
+
+    document.getElementById('hwid-val').innerText = Math.random().toString(36).substr(2, 8).toUpperCase();
+    
+    // ระบบสุ่มตัวเลข FPS และค่า Delay หลอกตาให้ขยับสมจริง
+    setInterval(() => {
+        let min = isBosterActive ? 235 : 58, max = isBosterActive ? 240 : 61;
+        let fps = (Math.random() * (max - min) + min).toFixed(1);
+        document.getElementById('top-fps').innerText = `CORE TUNER V.3 | ${fps} FPS`;
+        document.getElementById('ping-val').innerText = (Math.random() * 4 + 8).toFixed(0) + "ms";
+    }, 600);
+</script>
+</body>
+</html>
